@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import math
 import plotly.graph_objects as go
 import plotly.colors as co
-from jupyter_dash import JupyterDash
 import pandas as pd 
 import plotly.express as px
 import base64
