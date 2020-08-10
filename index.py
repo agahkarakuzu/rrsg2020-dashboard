@@ -13,6 +13,7 @@ from apps import home, phantom
 #    dcc.Link('CHANGE URL', href='/apps/home'),
 #    html.Div(session_id, id='session-id', style={'display': 'none'})
 #])
+server = app.server 
 
 def serve_layout():
     session_id = str(uuid.uuid4())
