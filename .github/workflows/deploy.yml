@@ -1,0 +1,17 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - none
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.0.4
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API}}
+          heroku_app_name: "dash-brainhack"
+          heroku_email: "agahkarakuzu@gmail.com"

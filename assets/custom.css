@@ -1,0 +1,111 @@
+.node-label-text-path{
+	text-shadow: none;
+	color:white;
+	fill:white !important;
+}
+.toast-header.button{
+	color:black;
+}
+
+.kJWAFY {
+    display: inline-block;
+    -webkit-box-align: center !important;
+    align-items: center !important;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+.gRFjMP{
+    color: lightgreen;
+}
+
+.gHfqLF {
+	color: lightgreen;
+	font-size: 18px;
+
+}
+
+.Select-control{
+    background-color: #555;
+    border-radius: 4px;
+    border: 1px solid lightgreen;
+    color: #333;
+    display: table;
+    border-spacing: 0;
+    border-collapse: separate;
+    height: 36px;
+    overflow: hidden;
+}
+
+.is-open>.Select-control{
+	background: #555;
+	border: 1px solid lightgreen;
+
+}
+
+.Select-menu-outer{
+	background-color: #444;
+	color: white;
+	border: 1px solid lightgreen;
+	text-align: left;
+}
+
+.Select-value-label{
+	color: white;
+}
+
+.Select--multi .Select-value {
+    background-color: #060606;
+    background-color: #060606
+    border-radius: 2px;
+    border: 1px solid darkgray;
+    border: 1px solid darkgray;
+    color: lightgreen;
+    display: inline-block;
+    font-size: .9em;
+    line-height: 1.4;
+    margin-left: 5px;
+    margin-top: 5px;
+    vertical-align: top;
+}
+
+.has-value.Select--single>.Select-control .Select-value .Select-value-label{
+	color: white;
+}
+
+.rc-slider-track {
+    position: absolute;
+    left: 0;
+    height: 4px;
+    border-radius: 6px;
+    background-color: lightgreen;
+}
+
+.rc-slider-dot-active {
+    border-color: olive;
+}
+
+.rc-slider-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    cursor: -webkit-grab;
+    margin-top: -5px;
+    cursor: grab;
+    border-radius: 50%;
+    border: solid 2px lightgreen;
+    background-color: #fff;
+    -ms-touch-action: pan-x;
+    touch-action: pan-x;
+}
+
+.rc-slider-handle:focus {
+	border-color: olive;}
+
+.rc-slider-handle:hover {
+	border-color: darkgreen;}
+
+.ccnjEe {
+	bottom: -30px;
+}
