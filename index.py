@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import uuid
 from app import app
-from apps import home, phantom
+from apps import home, phantom, brain
 
 
 #app.layout = html.Div([
@@ -32,6 +32,8 @@ def display_page(pathname):
          return home.layout
     elif pathname == '/apps/phantom':
          return phantom.layout
+    elif pathname == '/apps/brain':
+         return brain.layout
     else:
         return '404'
 

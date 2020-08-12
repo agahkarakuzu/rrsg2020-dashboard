@@ -1,8 +1,27 @@
 .node-label-text-path{
+    text-shadow: 2px 2px 5px #060606!important;
+	text-shadow: none;
+	color:lavenderblush;
+    fill:lavenderblush !important;
+    opacity: 0.3;
+    font-family: sans-serif !important;
+}
+
+.node-label-text-path:hover{
 	text-shadow: none;
 	color:white;
-	fill:white !important;
+    fill:white !important;
+    opacity: 1;
 }
+
+path.sankey-link:hover{
+    stroke: rgb(68, 68, 68);
+    stroke-opacity: 1;
+    fill-opacity: 1 !important;
+    stroke-width: 0;
+    opacity: 1;
+}
+
 .toast-header.button{
 	color:black;
 }

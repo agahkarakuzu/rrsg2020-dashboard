@@ -62,5 +62,14 @@ def get_dataframe(session_id):
 
     return pd.read_json(query_and_serialize_data(session_id))
 
+def get_dataframe_brain(session_id):
+    @cache.memoize()
+    def query_and_serialize_data(session_id):
+        
+        brain_df = pd.read_pickle('3T_human_T1maps_database.pkl')
+
+        return brain_df.to_json()
+
+    return pd.read_json(query_and_serialize_data(session_id))
 
 app.config.suppress_callback_exceptions = True

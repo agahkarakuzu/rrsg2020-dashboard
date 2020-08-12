@@ -19,8 +19,11 @@ import dash_bootstrap_components as dbc
 
 # TODO: Use cached data here later on
 # Read brain database in pickle format as is does not require format conversion
-brain_df = pd.read_pickle('https://github.com/rrsg2020/analysis/blob/master/databases/3T_human_T1maps_database.pkl?raw=true')
-phan_df = pd.read_pickle('https://github.com/rrsg2020/analysis/blob/master/databases/3T_NIST_T1maps_database.pkl?raw=true')
+#brain_df = pd.read_pickle('https://github.com/rrsg2020/analysis/blob/master/databases/3T_human_T1maps_database.pkl?raw=true')
+#phan_df = pd.read_pickle('https://github.com/rrsg2020/analysis/blob/master/databases/3T_NIST_T1maps_database.pkl?raw=true')
+
+brain_df = pd.read_pickle('3T_human_T1maps_database.pkl')
+phan_df = pd.read_pickle('3T_NIST_T1maps_database.pkl')
 
 # Merge datasets for Sankey chart
 frames = [brain_df, phan_df]
@@ -147,10 +150,11 @@ node_clrs = source_node_clrs + site_node_clrs + vendor_clrs
 fig = go.Figure(data=[go.Sankey(
     textfont = dict(size=14,family="Open Sans",color="white"),
     node = dict(
-      pad = 30,
+      pad = 100,
       thickness = 30,
       label = labels,
-      x= [0.001,0.001,0.5] + [0.3]*23 + [1,1,0.9],
+      hovertemplate='%{value}',
+      x= [0.001,0.001,0.3] + [0.3]*23 + [1,1,0.9],
       y = [0.75,0.001,0.0001] + list(np.linspace(0.1,1.1,23)) + [1,0.2,0.6],  
       color = node_clrs
     ),
@@ -158,6 +162,7 @@ fig = go.Figure(data=[go.Sankey(
       source = sources,
       target = targets,
       value = values,
+      hovertemplate='%{value}',
       color = link_clrs
   ))])
 
@@ -169,7 +174,8 @@ encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 card1 = html.Div([
     html.A(
     html.Img(src='data:image/gif;base64,{}'.format(encoded_image.decode()),width='300px'),
-    href="google.com"    
+    href="/apps/brain",
+    id='card-brain'    
     )
 ])
 
@@ -180,7 +186,7 @@ card2 = html.Div([
     html.A(
     html.Img(src='data:image/gif;base64,{}'.format(encoded_image.decode()),width='300px'),
     href="/apps/phantom",
-    target = '_blank'
+    id='card-phantom'
     )
 ])
 
@@ -252,12 +258,30 @@ row = html.Div(
         ),
         html.Center(
         dbc.Row([   
-         dbc.Col(dcc.Graph(figure=fig,config={
+         dbc.Col(dcc.Graph(figure=fig,id='sankey-home',config={
         'displayModeBar': False
         },style={'color':'white'}),width={"size": 10,"offset":1})   
         ])),
         toast_phantom,
-        toast_human
+        toast_human,
+        dbc.Tooltip(
+        "You can hold and drag the nodes to "
+        "explore their links easily.",  
+        target="sankey-home",
+        placement = "top"  
+        ),
+        dbc.Tooltip(
+        "Click for the phantom dashboard.",  
+        target="card-phantom",
+        style={"color":"black","background-color":"#26a96c",'font-weight':'bold','box-shadow': '2px 2px 5px #060606'}, 
+        placement = "left"  
+    ),
+        dbc.Tooltip(
+        "Click for the brain dashboard.",  
+        target="card-brain",
+        style={"color":"black","background-color":"#fec02f",'font-weight':'bold','box-shadow': '2px 2px 5px #060606'}, 
+        placement = "left"  
+    )
     ]
 
 )
