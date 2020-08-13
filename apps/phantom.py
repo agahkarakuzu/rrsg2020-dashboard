@@ -673,7 +673,7 @@ def get_t1_arr(inp,metric,version,deviation):
             t1.append(0)
             
     if deviation:
-        t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[version][metric]))/((np.array(t1) + np.array(NIST_REF[version][metric]))/2)*100)
+        t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[version][metric]))/(np.array(NIST_REF[version][metric]))*100) 
         unit = "%"
     return t1,num,unit
 
@@ -1231,7 +1231,7 @@ def populate_site_panel(cur_scan,session_id,cur_site,metric,deviation):
         t1 = [np.mean(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
         unit = 'ms'
         if deviation:
-            t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[ver][metric]))/((np.array(t1) + np.array(NIST_REF[ver][metric])))*100)
+            t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[version][metric]))/(np.array(NIST_REF[version][metric]))*100)
             unit = '%'
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,unit,'values')
         met = html.H5('Mean',style={'color':'lightgreen'})
