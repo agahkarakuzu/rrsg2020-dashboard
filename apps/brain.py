@@ -92,8 +92,8 @@ rootLayout = html.Div(
         dbc.Tabs(
             [    dbc.Tab(label = 'Home',tab_id="home", tab_style=tab_style_home,label_style={"color": "white"}),
                  dbc.Tab(label="Big Picture",tab_id="big-picture-brain",tab_style=tab_style,label_style={"color": "white"}),
-                 dbc.Tab(label="By Region",tab_id="by-region",tab_style=tab_style,label_style={"color": "white"}),
-                 dbc.Tab(label="By Site",tab_id="by-site-brain",tab_style=tab_style,label_style={"color": "white"})
+                 dbc.Tab(label="By Region",tab_id="by-region",tab_style=tab_style,label_style={"color": "white"})
+                 #dbc.Tab(label="By Site",tab_id="by-site-brain",tab_style=tab_style,label_style={"color": "white"})
                  
             ],
             id="tabs-brain",
@@ -124,8 +124,8 @@ def switch_tab(at,session_id):
         return [tab1_Layout,{'visibility':'visible'}]
     elif at == "by-region":
         return [tab2_Layout,{'visibility':'visible'}]
-    elif at == "by-site-brain":
-        print('by site')
+    #elif at == "by-site-brain":
+    #    return [tab3_Layout,{'visibility':'visible'}]
     elif at == "home":
         return [home.layout,{'visibility':'hidden','height':'0px'}]
 
@@ -252,12 +252,7 @@ tab1_Layout = dbc.Container(fluid=True,children=[
         "Certain ROIs were not possible to be placed on some scans due to slice prescriptions.",
         target="guage-brain",
         placement = "top"  
-    ),
-    dbc.Tooltip(
-        "Select a vendor to update values.",
-        target="vendor-slider",
-        placement = 'top'
-    ),
+    )
 ])
 
 # =========================================================================
@@ -306,7 +301,7 @@ def update_output1(hoverData,vendor,session_id):
             std = 0
             num = 0
     else:
-        region = 'Click on a region'
+        region = 'Click on a brain region to start.'
         avg = 0
         std = 0
         num = 0
@@ -383,12 +378,34 @@ def update_boxplots_brain(hoverData,session_id,vendor,axs):
                     it +=1
             else:
                 figb = empty_figure
+                figb.update_layout(annotations=[dict(
+                                x=0.5,
+                                y=0.5,
+                                xref="paper",
+                                yref="paper",
+                                text="Click on a brain region.",
+                                showarrow=False)])
         else:
             figb = empty_figure
-
+            region = 'N/A'
+            figb.update_layout(annotations=[dict(
+                                x=0.5,
+                                y=0.5,
+                                xref="paper",
+                                yref="paper",
+                                text="Click on a brain region.",
+                                showarrow=False)])
     else: 
         figb = empty_figure
-        region = 'Click on a brain region'
+        figb.update_layout(annotations=[dict(
+                                x=0.5,
+                                y=0.5,
+                                xref="paper",
+                                yref="paper",
+                                text="Click on a brain region",
+                                showarrow=False)])
+        region = 'Click on a brain region to start.'
+        return [figb,html.H5(region,style={'color':'#fec02f'})]
 
     figb.update_layout(plot_bgcolor="#060606",
           paper_bgcolor="#060606",
@@ -406,7 +423,7 @@ def update_boxplots_brain(hoverData,session_id,vendor,axs):
         figb.update_layout(yaxis=dict(showgrid=True, 
             zeroline=False, 
             showticklabels=True ))
-    figb.update_layout(xaxis=dict(showgrid=False, 
+        figb.update_layout(xaxis=dict(showgrid=False, 
             zeroline=False,
             showticklabels=False  ))
     return [figb,html.H5(region,style={'color':'#fec02f'})]

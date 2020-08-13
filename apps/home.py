@@ -228,9 +228,9 @@ row = html.Div(
     [           
         dbc.Row(
             [   dbc.Col(
-                dbc.Button(
-               "About Phantom Data", id="phan_button", color='light'
-                ),width=1,align='center'),
+                html.A(dbc.Button(
+               "About the Challenge", id="phan_button", color='light'
+                ),href='https://blog.ismrm.org/2019/12/12/reproducibility-challenge-2020-join-the-reproducible-research-and-quantitative-mr-study-groups-in-their-efforts-to-standardize-t1-mapping/',target='_blank'),width=1,align='center'),
                 dbc.Col(
                     card2,
                     width=3
@@ -246,9 +246,9 @@ row = html.Div(
 
                 ),
                 dbc.Col(
-                dbc.Button(
-               "About Human Data", id="human_button", color='light'
-                ),width=1,align='center')
+                html.A(dbc.Button(
+               "GitHub Organization", id="human_button", color='light'
+                ),href='https://github.com/rrsg2020',target='_blank'),width=1,align='center')
             ],
              justify = 'center',
              style={
@@ -292,20 +292,20 @@ layout=html.Div(children=[
     ])    
 ])
 
-@app.callback(
-    Output("positioned-toast-phantom", "is_open"),
-    [Input("phan_button", "n_clicks")],
-)
-def open_toast(n):
-    if n:
-        return True
-    return False
+#@app.callback(
+#    Output("positioned-toast-phantom", "is_open"),
+#    [Input("phan_button", "n_clicks")],
+#)
+#def open_toast(n):
+#    if n:
+#        return True
+#    return False
 
-@app.callback(
-    Output("positioned-toast-human", "is_open"),
-    [Input("human_button", "n_clicks")],
-)
-def open_toast(n):
-    if n:
-        return True
-    return False
+#@app.callback(
+#    Output("positioned-toast-human", "is_open"),
+#    [Input("human_button", "n_clicks")],
+#)
+#def open_toast(n):
+#    if n:
+#        return True
+#    return False

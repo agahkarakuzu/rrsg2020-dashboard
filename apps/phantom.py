@@ -93,13 +93,15 @@ def nist_figure(t1,phan_name,radius,scaleshow,show_logos,SN,unit,showtype):
             else:
                 hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit
             
-            if (SN != 'V1') & (SN != 'V2'):
+            if (SN != 'V1') & (SN != 'V2') & (SN != 'N/A'):
                 if int(SN) < 42:
                     hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V1']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V1']['STD'][ii])) + ' ms'                
                 elif int(SN) > 41:
                     hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V2']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V2']['STD'][ii])) + ' ms'
                 else: 
                     hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit
+            if (SN=='N/A'):
+                hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit
 
             fig.add_trace(go.Scatter(
             x=[circles[ii][0]],
@@ -657,16 +659,17 @@ def get_t1_arr(inp,metric,version,deviation):
     for ii in range(len(inp)):
         cur = []
         num = len(np.array(inp[ii]))
-        if num>0:
+        if num>0 and list(inp[ii]) != None:
             for jj in range(num):
-                if metric == "Mean":
-                    cur.append(np.mean(inp[ii][jj]))
-                if metric == "Median":    
-                    cur.append(np.median(inp[ii][jj]))
-                if metric == "STD":
-                    cur.append(np.std(inp[ii][jj]))
-                if metric == "CoV":
-                    cur.append(np.std(inp[ii][jj])/np.mean(inp[ii][jj]))
+                if inp[ii][jj] != None:
+                    if metric == "Mean":
+                        cur.append(np.mean(inp[ii][jj]))
+                    if metric == "Median":    
+                        cur.append(np.median(inp[ii][jj]))
+                    if metric == "STD":
+                        cur.append(np.std(inp[ii][jj]))
+                    if metric == "CoV":
+                        cur.append(np.std(inp[ii][jj])/np.mean(inp[ii][jj]))
                    
                     
             # This should be mean either way (dashboard shows mean STD, mean COV etc.)        
@@ -791,7 +794,9 @@ def slice_phan_data_t2(df,SN,vendor,sph):
         ret = [tmp_df['site name'],np.array(tmp_df['T1 - NIST sphere ' + str(sph)]),tmp_df['MRI vendor']]    
     elif len(SN)==1 and SN[0]=="V2":    
         tmp_df = tmp_df[(tmp_df['phantom serial number']>41) & (tmp_df['phantom serial number']<103)]
-        ret = [tmp_df['site name'],np.array(tmp_df['T1 - NIST sphere ' + str(sph)]),tmp_df['MRI vendor']]  
+        ret = [tmp_df['site name'],np.array(tmp_df['T1 - NIST sphere ' + str(sph)]),tmp_df['MRI vendor']]
+    elif len(SN)==2:
+        ret = [tmp_df['site name'],np.array(tmp_df['T1 - NIST sphere ' + str(sph)]),tmp_df['MRI vendor']]
     elif len(SN)==0:
         ret = [[],[],[]]
     return ret 
@@ -910,18 +915,19 @@ def update_boxplots(sph,session_id,axs,SN,vendor):
         figb = go.Figure()
         if not len(bb) == 0:
             for b in range(len(bb)):
-                figb.add_trace(go.Box(y=list(bb[b]),
-                               boxpoints='all', # can also be outliers, or suspectedoutliers, or False
-                               jitter=0.3, # add some jitter for a better separation between points
-                               pointpos=-1.8, # relative position of points wrt box      
-                               name= str(b+1)+ ' ' + aa[b],
-                               boxmean=True,
-                               marker = dict(size=1.5),
-                               notched=True,
-                               hoveron="boxes",       
-                               customdata = [cc[b]],
-                               hoverlabel = dict(font=dict(color='white'))       
-                                     ))
+                if bb[b] != None:
+                    figb.add_trace(go.Box(y=list(bb[b]),
+                                boxpoints='all', # can also be outliers, or suspectedoutliers, or False
+                                jitter=0.3, # add some jitter for a better separation between points
+                                pointpos=-1.8, # relative position of points wrt box      
+                                name= str(b+1)+ ' ' + aa[b],
+                                boxmean=True,
+                                marker = dict(size=1.5),
+                                notched=True,
+                                hoveron="boxes",       
+                                customdata = [cc[b]],
+                                hoverlabel = dict(font=dict(color='white'))       
+                                        ))
         else:
             figb.update_layout(annotations=[dict(
                                 x=0.5,
@@ -985,7 +991,19 @@ def update_boxplots(sph,session_id,axs,SN,vendor):
               showticklabels=False  ))
         return figb, selected
     else:
-        return empty_figure, 1
+        ef = go.Figure(layout={
+        'plot_bgcolor':"#060606",
+        'paper_bgcolor':"#060606",
+        "xaxis":{"showgrid":False,"zeroline":False,"showticklabels":False},
+        "yaxis":{"showgrid":False,"zeroline":False,"showticklabels":False}})
+        ef.update_layout(annotations=[dict(
+                                x=0.5,
+                                y=0.5,
+                                xref="paper",
+                                yref="paper",
+                                text="Hover over spheres to start.",
+                                showarrow=False)])
+        return ef, 1
 
 @app.callback([Output(component_id='vendor-t2',component_property='children'),
                Output('cur_site','children')],
@@ -1040,7 +1058,8 @@ site_metric = dcc.Dropdown(
         {'label': 'Median', 'value': 'Median'}, 
         {'label': 'CoV', 'value': 'CoV'},    
     ],
-    placeholder = "Select a metric..."
+    placeholder = "Select a metric...",
+    value = 'Mean'
 )  
 
 # SCAN SLIDER | TAB3 | slider-scan
@@ -1233,12 +1252,15 @@ def populate_site_panel(cur_scan,session_id,cur_site,metric,deviation):
         t1 = [np.mean(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
         unit = 'ms'
         if deviation:
-            t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[version][metric]))/(np.array(NIST_REF[version][metric]))*100)
+            t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[ver][metric]))/(np.array(NIST_REF[ver][metric]))*100)
             unit = '%'
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,unit,'values')
         met = html.H5('Mean',style={'color':'lightgreen'})
     elif metric == 'Median':
         t1 = [np.median(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
+        if deviation:
+            t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[ver][metric]))/(np.array(NIST_REF[ver][metric]))*100)
+            unit = '%'
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'ms','values')
         met = html.H5('Median',style={'color':'lightgreen'})
     elif metric == 'STD':
