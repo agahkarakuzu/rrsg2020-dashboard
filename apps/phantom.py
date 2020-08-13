@@ -84,12 +84,21 @@ def nist_figure(t1,phan_name,radius,scaleshow,show_logos,SN,unit,showtype):
             else:
                 add_text = ''
 
-            if SN == 'V1' or int(SN) < 42:
+            if SN == 'V1':
                 hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V1']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V1']['STD'][ii])) + ' ms'                
-            elif SN == 'V2' or int(SN) > 41:
+            elif SN == 'V2':
                 hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V2']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V2']['STD'][ii])) + ' ms'
             else:
                 hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit
+            
+            if (SN != 'V1') & (SN != 'V2'):
+                if int(SN) < 42:
+                    hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V1']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V1']['STD'][ii])) + ' ms'                
+                elif int(SN) > 41:
+                    hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit + add_text + '<br> target: ' + str(np.round(NIST_REF['V2']['Mean'][ii])) + '&plusmn;' + str(np.round(NIST_REF['V2']['STD'][ii])) + ' ms'
+                else: 
+                    hovertext = '<b>Sphere ' + str(ii+1) + '</b>' + '<br>'+str(np.round(t1[ii],2)) + ' ' + unit
+
             fig.add_trace(go.Scatter(
             x=[circles[ii][0]],
             y=[circles[ii][1]], 
@@ -390,6 +399,7 @@ metric_list = dcc.Dropdown(
         {'label': 'CoV', 'value': 'CoV'}
     ],
     multi=False,
+    value = 'Mean',
     id = "metric-dropdown-t1",
     placeholder = 'Select a metric'
 )
@@ -431,19 +441,19 @@ toggle_deviation = daq.BooleanSwitch(
 # TODO: IMPROVE TOOLTIPS
 tab1_Layout = dbc.Container(fluid=True,children=[
     dbc.Row([
-        dbc.Col([html.Center(vendor_list),
+        dbc.Col([ html.Br(),
+                html.Center(vendor_list),
                 html.Br(),
                 html.Center(toggle_tesla),
                 html.Br(),html.Center(toggle_SN)],width={"size":3,"offset":0},align="center"),
-        dbc.Col(nist_cockpit,
+        dbc.Col([html.Center(html.Div(id="metric-label",children=[])),
+                 html.Center(html.Div(id="submit",children=[])),
+                nist_cockpit],
                 width={"size":5,"offset":0},align="center"),
         dbc.Col([html.Center(metric_list),
                 html.Br(),
-                html.Center(html.Div(id="metric-label",children=[])),
-                html.Br(),
                 html.Center(toggle_deviation),
-                html.Br(),
-                html.Center(html.Div(id="submit",children=[]))],width={"size":3,"offset":0},align="center")
+                ],width={"size":3,"offset":0},align="center")
         ],justify="around"),
     dbc.Row([
         dbc.Col(led_tesla,width=2,align="center"),
@@ -529,7 +539,8 @@ rootLayout = html.Div(
             active_tab="big-picture",
         ),
         html.Div(id="content"),
-    ]
+    ],
+    style = {'height':'90vh'}
 )
 
 # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| SERVE LAYOUT 
@@ -721,9 +732,9 @@ def update_phantom(session_id,tesla,SN,vendor,metric,deviation):
     df = get_dataframe(session_id)
     #print(session_id)
     if deviation: 
-        dev_msg = html.H5('Percent difference',style={'color':'skyblue'})
+        dev_msg = html.H6('Percent difference',style={'color':'skyblue'})
     else:
-        dev_msg = html.H5('Summary stats',style={'color':'skyblue'})
+        dev_msg = html.H6('Summary stats',style={'color':'skyblue'})
 
     if not metric == None:
         if SN == "0:41":
@@ -750,7 +761,7 @@ def update_phantom(session_id,tesla,SN,vendor,metric,deviation):
 
         return nist_figure(t1,'Hover spheres <br> T1 Plate',7,True,True,version,unit,'values'), num, tmp, dev_msg
     else:
-        t1,tmp,num, unit = slice_phan_data_t1(df,"All","Mean",3.00,0,41,"V1",True)
+        t1,tmp,num, unit = slice_phan_data_t1(df,"All","Mean",3.00,0,41,"V1",False)
         return nist_figure(t1,'Hover spheres <br> T1 Plate',7,True,True,'V1',unit,'values'), num, tmp, dev_msg
 
 
@@ -869,8 +880,12 @@ tab2_Layout = dbc.Container(fluid=True,children=[
                           dbc.Col([led_sphere],align="center"),
                           dbc.Col([html.Center(site_t2)],align="center")
                 ],justify="center")
-        ],width={"size":8,"offset":0},align="center"),]),  
-        ])
+        ],width={"size":8,"offset":0},align="center"),]),
+        dbc.Tooltip(
+            "Dashed lines indicate reference values. Yellow: V1 and Red: V2.",
+             target='sphere-boxes',
+             placement= 'top'),  
+        ],style={'height':'90vh'})
 
 # ==========================================================
 # T A B 2 - C A L L B A C K S
@@ -913,18 +928,46 @@ def update_boxplots(sph,session_id,axs,SN,vendor):
                                 yref="paper",
                                 text="No data available for this selection",
                                 showarrow=False)])
-            
+        #figb.update_layout(
+        #    yaxis = dict(
+        #        tickmode = 'array',
+        #        tickvals = [ref1,ref2],
+        #        ticktext = [str(ref1), str(ref2)]
+        #    )
+        figb.add_shape(
+        # Line Horizontal
+            type="line",
+            xref = 'paper',
+            yref = 'y',
+            x0=0,
+            y0=ref1,
+            x1=1,
+            y1=ref1,
+            line=dict(
+                color="yellow",
+                width=2,
+                dash="dashdot",
+            ))
+        figb.add_shape(
+        # Line Horizontal
+            type="line",
+            xref = 'paper',
+            yref = 'y',
+            x0=0,
+            y0=ref2,
+            x1=1,
+            y1=ref2,
+            line=dict(
+                color="red",
+                width=2,
+                dash="dashdot",
+            ))
         figb.update_layout(plot_bgcolor="#060606",
           paper_bgcolor="#060606",
           showlegend=False,
           margin=dict(l=0, r=0, t=10, b=30),
-          hovermode = 'x unified')
-        figb.update_layout(
-            yaxis = dict(
-                tickmode = 'array',
-                tickvals = [ref1,ref2],
-                ticktext = [str(ref1), str(ref2)]
-            )
+          hovermode = 'x unified', 
+          font = dict(color='white')
         )
         if axs:
             figb.update_layout(yaxis=dict(range=[0, 2500],
@@ -1061,6 +1104,8 @@ led_conc = daq.LEDDisplay(
     size=25
 )
 
+site_metric_label = html.Div(id='site-metric-label',children=[])
+
 
 # ==========================================================
 # T A B 3 - L A Y O U T 
@@ -1095,8 +1140,8 @@ tab3_Layout = dbc.Container(fluid=True,children=[
                  ],justify="around",style={'height':'50px'}),
                  ],width={"size":4,"offset":0},align="center"),
         # Main Col2
-        dbc.Col([html.Center(nist_cockpit3),html.Br(),html.Center(led_conc)],width={"size":4,"offset":0}),
-        dbc.Col([html.Center(scat_ref)],width={"size":4,"offset":0}),
+        dbc.Col([html.Center(site_metric_label),html.Br(),html.Center(nist_cockpit3),html.Br(),html.Center(led_conc)],width={"size":4,"offset":0}),
+        dbc.Col([html.Br(),html.Center(scat_ref)],width={"size":4,"offset":0}),
     ])
         ])
 
@@ -1139,6 +1184,7 @@ encoded_image = base64.b64encode(open(image_filename, 'rb').read())
                Output('data-link-t3','children'),
                Output('scatter-by-site','figure'),
                Output('led-conc','value'),
+               Output('site-metric-label','children')
               ],
               [Input('slider-scan', 'value'),Input('session-id', 'children'),
                Input('dropdown-site-name', 'value'),
@@ -1188,26 +1234,31 @@ def populate_site_panel(cur_scan,session_id,cur_site,metric,deviation):
             t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[ver][metric]))/((np.array(t1) + np.array(NIST_REF[ver][metric])))*100)
             unit = '%'
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,unit,'values')
+        met = html.H5('Mean',style={'color':'lightgreen'})
     elif metric == 'Median':
         t1 = [np.median(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'ms','values')
+        met = html.H5('Median',style={'color':'lightgreen'})
     elif metric == 'STD':
         t1 = [np.std(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
         unit = 'ms'
+        met = html.H5('STD',style={'color':'lightgreen'})
         if deviation:
             t1 = list(np.abs(np.array(t1) - np.array(NIST_REF[ver][metric]))/((np.array(t1) + np.array(NIST_REF[ver][metric])))*100)
             unit = '%'
         fig = nist_figure(t1,'T1 Plate',6,True,True,SN,unit,'values')
     elif metric == 'CoV':
         t1 = [np.std(np.array(tmp[sphr]))/np.mean(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
-        fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'a.u.','values')        
+        fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'a.u.','values')
+        met = html.H5('CoV',style={'color':'lightgreen'})        
     else:
         t1 = [np.mean(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
-        fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'ms','values')        
+        fig = nist_figure(t1,'T1 Plate',6,True,True,SN,'ms','values')  
+        met = html.H5('Mean',style={'color':'lightgreen'})       
     boxes = go.Figure()
     t = 0
     for sphr in NIST_SPHERES:
-        cur_val = NIST_REF[ver]['Mean'][t]
+        #cur_val = NIST_REF[ver]['Mean'][t]
         boxes.add_trace(go.Box(y = list(tmp[sphr]),
                                #x = [cur_val]*len(tmp[sphr]),
                                boxpoints='all', # can also be outliers, or suspectedoutliers, or False
@@ -1225,7 +1276,8 @@ def populate_site_panel(cur_scan,session_id,cur_site,metric,deviation):
           paper_bgcolor="#060606",
           showlegend=False,
           margin=dict(l=0, r=0, t=10, b=30),
-          hovermode = 'x unified')
+          hovermode = 'x unified',
+          font = dict(color='white'))
     boxes.update_layout(yaxis=dict(range=[-10, 2500],
           showgrid=True, 
           zeroline=False, 
@@ -1238,4 +1290,4 @@ def populate_site_panel(cur_scan,session_id,cur_site,metric,deviation):
     t1_conc = [np.mean(np.array(tmp[sphr])) for sphr in NIST_SPHERES]
     ref_conc = list(NIST_REF[ver]['Mean'])
     concord = calculate_concordance([(t1_conc[ii],ref_conc[ii]) for ii in range(len(t1_conc))])
-    return [fig,temp,fs,tr,vndr,scanner,dat_type,dat_link,boxes,concord]
+    return [fig,temp,fs,tr,vndr,scanner,dat_type,dat_link,boxes,concord,met]
