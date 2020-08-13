@@ -19,8 +19,10 @@ import os
 # ==========================================================
 NIST_REF = dict()
 NIST_REF.update({"V1":{"Mean":[1989,1454,984.1,706,496.7,351.5,247.13,175.3,125.9,89,62.7,44.53,30.84,21.71],
+                       "Median":[1989,1454,984.1,706,496.7,351.5,247.13,175.3,125.9,89,62.7,44.53,30.84,21.71],
                       "STD":[1,2.5,0.33,1.5,0.41,0.91,0.086,0.11,0.33,0.17,0.13,0.09,0.016,0.005  ]}})
 NIST_REF.update({"V2":{"Mean":[1833.97,1330.16,987.27,690.08,484.97,341.58,240.86,174.95,121.08,85.75,60.21,42.89,30.40,21.44],
+                       "Median":[1833.97,1330.16,987.27,690.08,484.97,341.58,240.86,174.95,121.08,85.75,60.21,42.89,30.40,21.44],
                       "STD":[30.32,20.41,14.22,10.12,7.06,4.97,3.51,2.48,1.75,1.24,0.87,0.44,0.62,0.31]}})
 
 def circle_points(r, n):
@@ -420,7 +422,7 @@ def update_metric_label(inp):
     elif inp=='STD':
         return [html.H5('STD',style={"color":"lightgreen"}), False,False]
     elif inp=='Median':
-        return [html.H5('Median',style={"color":"lightgreen"}), True,False]
+        return [html.H5('Median',style={"color":"lightgreen"}), False,False]
     elif inp=='CoV':
         return [html.H5('CoV',style={"color":"lightgreen"}), True,False]
     else: 
