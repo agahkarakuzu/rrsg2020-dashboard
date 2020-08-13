@@ -317,9 +317,18 @@ def update_output1(hoverData,vendor,session_id):
 toggle_ax_br = daq.BooleanSwitch(
     label='Fix/Release y-Axis',
     labelPosition='bottom',
-    id = 'toggle-axis'
+    id = 'toggle-axis-brain'
 )
 
+# SPHERE-WISE BOXPLOTS| TAB2 | sphere-boxes
+boxes_brain = dcc.Graph(
+        id='brain-boxes',
+        figure=empty_figure,
+         config={
+        'displayModeBar': True    
+        })
+
+brain_box_label = html.Div(id='brain-box-div',children = [])
 # T A B 2 - L A Y O U T 
 # ==========================================================                             
 tab2_Layout = dbc.Container(fluid=True,children=[
@@ -328,11 +337,76 @@ tab2_Layout = dbc.Container(fluid=True,children=[
                 html.Br(),
                 html.Center(vendor_brain_t1),
                 html.Br(),
-                html.Center(toggle_ax_br)],width={"size":4,"offset":0},align="center")])
-#        dbc.Col([boxes,
-#                 dbc.Row([dbc.Col([html.Center(vendor_lbl)],align="center"),
-#                          dbc.Col([led_sphere],align="center"),
-#                          dbc.Col([html.Center(site_t2)],align="center")
-#                ],justify="center")
-#        ],width={"size":8,"offset":0},align="center")]),  
-        ])
+                html.Center(toggle_ax_br)],width={"size":4,"offset":0},align="center"),
+         dbc.Col([boxes_brain,html.Br(),html.Center(brain_box_label)],width={"size":8,"offset":0},align="center")
+         ],justify='around')])
+
+@app.callback([Output(component_id='brain-boxes',component_property='figure'),
+               Output('brain-box-div','children')   
+             ],
+             [Input(component_id='fig-brain',component_property="clickData"),
+              Input('session-id', 'children'),
+              Input(component_id='vendor-slider',component_property="value"),
+              Input(component_id='toggle-axis-brain',component_property="on")
+             ])
+def update_boxplots_brain(hoverData,session_id,vendor,axs):
+    df = get_dataframe_brain(session_id)
+    if hoverData is not None:
+        if (hoverData['points'][0]['y'],hoverData['points'][0]['x']) in rrsg_brain.keys():
+            region = rrsg_brain[(hoverData['points'][0]['y'],hoverData['points'][0]['x'])]
+            if region != 'Ventricles':
+                if vendor == 1: 
+                    tmp = df[df['MRI vendor']=='Siemens']
+                elif vendor == 2: 
+                    tmp = df[df['MRI vendor']=='GE'] 
+                elif vendor == 3:
+                    tmp = df[df['MRI vendor']=='Philips']
+                else:
+                    tmp=df
+                tmp = np.array(tmp[region])
+                figb = go.Figure()
+                it = 1
+                for ii in tmp:
+                    if ii:
+                      figb.add_trace(
+                          go.Box(y=list(ii),
+                               boxpoints='all', # can also be outliers, or suspectedoutliers, or False
+                               jitter=0.3, # add some jitter for a better separation between points
+                               pointpos=-1.8, # relative position of points wrt box      
+                               name= 'Scan' + str(it),
+                               boxmean=True,
+                               marker = dict(size=1.5),
+                               notched=True,
+                               hoveron="boxes",       
+                               hoverlabel = dict(font=dict(color='white'))       
+                        ))
+                    it +=1
+            else:
+                figb = empty_figure
+        else:
+            figb = empty_figure
+
+    else: 
+        figb = empty_figure
+        region = 'Click on a brain region'
+
+    figb.update_layout(plot_bgcolor="#060606",
+          paper_bgcolor="#060606",
+          showlegend=False,
+          margin=dict(l=0, r=0, t=10, b=30),
+          hovermode = 'x unified', 
+          font = dict(color='white')
+        )
+    if axs:
+        figb.update_layout(yaxis=dict(range=[0, 3500],
+            showgrid=True, 
+            zeroline=False, 
+            showticklabels=True ))
+    else:
+        figb.update_layout(yaxis=dict(showgrid=True, 
+            zeroline=False, 
+            showticklabels=True ))
+    figb.update_layout(xaxis=dict(showgrid=False, 
+            zeroline=False,
+            showticklabels=False  ))
+    return [figb,html.H5(region,style={'color':'#fec02f'})]
